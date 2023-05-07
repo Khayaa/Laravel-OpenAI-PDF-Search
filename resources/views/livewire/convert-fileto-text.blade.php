@@ -9,6 +9,14 @@
                 <div class="row mb-3">
                     <div class="col">
                         <div class="form-group">
+                            <label for="">User Input</label>
+                            <input class="form-control" type="text" name="" id="">
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col">
+                        <div class="form-group">
 
                             <select wire:model='document' class="form-control @error('document') is-invalid @enderror">
                                 <option value="">--select file---</option>
