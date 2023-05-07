@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('text_data', function (Blueprint $table) {
             $table->id();
-            $table->longText('text')->unique();
+            $table->longText('text');
             $table->unsignedBigInteger('file_id');
             $table->foreign('file_id')->references('id')->on('pdfdocs')->onDelete('cascade');
             $table->timestamps();

@@ -62,11 +62,11 @@ class PdfToTextComponent extends Component
 
         // loop through the chunks and store each one as a vector
         foreach ($chunks as $a => $chunk) {
-            // generate a vector for the chunk using the OpenAI API
-            // $vector = OpenAI::completions()->create([
-            //     'model' => 'text-embedding-ada-002',
-            //     'prompt' => $chunk,
-            // ]);
+           // generate a vector for the chunk using the OpenAI API
+            $vector = OpenAI::completions()->create([
+                'model' => 'text-embedding-ada-002',
+                'prompt' => $chunk,
+            ]);
             //store the chunk to the database
             $text =  TextData::create([
                 'file_id'=> $pdf_file->id ,
