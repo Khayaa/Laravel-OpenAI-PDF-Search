@@ -75,10 +75,10 @@ class PdfToTextComponent extends Component
 
             // store the vector in the database
 
-            // $vectorModel = new TextVector();
-            // $vectorModel->vector = json_encode($vector['data'][0]['embedding']);
-            // $vectorModel->text_id = $text->id;
-            // $vectorModel->save();
+            $vectorModel = new TextVector();
+            $vectorModel->vector = json_encode($vector['data'][0]['embedding']);
+            $vectorModel->text_id = $text->id;
+            $vectorModel->save();
         }
 
         $this->reset('pdf_doc');
