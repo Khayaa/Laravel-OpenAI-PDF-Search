@@ -8,6 +8,7 @@ use App\Models\TextVector;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Log;
 use OpenAI\Laravel\Facades\OpenAI;
 use Spatie\PdfToText\Pdf;
 use Sastrawi\Stemmer\StemmerFactory;
@@ -25,7 +26,7 @@ class PdfToTextComponent extends Component
         $this->validate();
         $file_name = now()->format('YmdHis') . '.' . $this->pdf_doc->getClientOriginalExtension();
         $file = $this->pdf_doc->storePubliclyAs('pdf-file', $file_name, 'public');
-       $pdf_file =  Pdfdoc::create([
+        $pdf_file =  Pdfdoc::create([
             'name' => $file_name,
             'file' => $file
         ]);
@@ -62,24 +63,36 @@ class PdfToTextComponent extends Component
 
         // loop through the chunks and store each one as a vector
         foreach ($chunks as $a => $chunk) {
-           // generate a vector for the chunk using the OpenAI API
-            $vector = OpenAI::completions()->create([
-                'model' => 'text-embedding-ada-002',
-                'prompt' => $chunk,
-            ]);
-            //store the chunk to the database
-            $text =  TextData::create([
-                'file_id'=> $pdf_file->id ,
-                'text' => $chunk
-            ]);
+            // generate a vector for the chunk using the OpenAI API
+            try {
+                $vector = OpenAI::embeddings()->create([
+                    'model' => 'text-embedding-ada-002',
+                    'input' => $chunk,
+                ]);
+                  
 
-            // store the vector in the database
+                    // store the chunk to the database
+                    $textData = TextData::firstOrCreate([
+                        'file_id' => $pdf_file->id,
+                        'text' => $chunk
+                    ]);
 
-            $vectorModel = new TextVector();
-            $vectorModel->vector = json_encode($vector['data'][0]['embedding']);
-            $vectorModel->text_id = $text->id;
-            $vectorModel->save();
+                    // store the vector in the database
+                    $vectors = TextVector::create([
+                        'text_id' => $textData->id,
+                        'vector' => json_encode($vector['data'][0]['embedding']),
+                        
+                    ]);
+
+
+
+            } catch (\Exception $e) {
+                // handle other exceptions
+                \Illuminate\Support\Facades\Log::error('OpenAI API exception: ' . $e->getMessage());
+                continue;
+            }
         }
+
 
         $this->reset('pdf_doc');
         session()->flash('message', 'File created & converted Successfully');

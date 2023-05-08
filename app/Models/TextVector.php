@@ -10,6 +10,6 @@ class TextVector extends Model
     use HasFactory;
 
     protected $fillable = [
-        'vector' , 
+        'vector' , 'text_id'
     ];
 }
