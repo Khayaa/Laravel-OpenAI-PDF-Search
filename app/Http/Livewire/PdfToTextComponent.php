@@ -81,7 +81,7 @@ class PdfToTextComponent extends Component
                     $vectors = TextVector::create([
                         'text_id' => $textData->id,
                         'vector' => json_encode($vector['data'][0]['embedding']),
-                        
+                        'file_id' => $pdf_file->id,
                     ]);
 
 

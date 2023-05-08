@@ -15,7 +15,9 @@ return new class extends Migration
             $table->id();
             $table->json('vector');
             $table->unsignedBigInteger('text_id');
+            $table->unsignedBigInteger('file_id');
             $table->foreign('text_id')->references('id')->on('text_data')->onDelete('cascade');
+            $table->foreign('file_id')->references('id')->on('pdfdocs')->onDelete('cascade');
             $table->timestamps();
         });
     }

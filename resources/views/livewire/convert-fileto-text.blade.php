@@ -1,7 +1,7 @@
 <div class="container">
     <div class="card">
         <div class="card-header">
-            <h4>Convert PDF</h4>
+            <h4>Search PDF</h4>
         </div>
         <div class="card-body">
             <form wire:submit.prevent='convertFile' method="post">
@@ -10,14 +10,19 @@
                     <div class="col">
                         <div class="form-group">
                             <label for="">User Input</label>
-                            <input class="form-control" type="text" name="" id="">
+                            <input wire:model='input' class="form-control @error('input') is-invalid @enderror" type="text" name="" id="">
+                            @error('input')
+                                <div class="invalid-feedback">
+                                    {{ $message }}
+                                </div>
+                            @enderror
                         </div>
                     </div>
                 </div>
                 <div class="row mb-3">
                     <div class="col">
                         <div class="form-group">
-
+                            <label for="document">Select Pdf File</label>
                             <select wire:model='document' class="form-control @error('document') is-invalid @enderror">
                                 <option value="">--select file---</option>
                                 @foreach ($docs as $doc)
@@ -39,7 +44,7 @@
                 @endif
                 <div class="text-center mb-3">
                     <button class="btn btn-primary" type="submit">
-                        Convert file <span class="me-2">
+                        Search file <span class="me-2">
                             <div wire:loading wire:target='convertFile' class="spinner-border spinner-border-sm"
                                 role="status">
                                 <span class="visually-hidden"></span>

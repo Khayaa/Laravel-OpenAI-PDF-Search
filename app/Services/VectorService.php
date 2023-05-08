@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\TextData;
 use App\Models\TextVector;
 use App\Models\Vector;
 use Illuminate\Support\Facades\DB;
@@ -29,6 +30,27 @@ class VectorService
             ];
         }, $vectors);
     }
+
+    public function getTextsFromIds(array $ids): array
+{
+    $texts = TextData::whereIn('id', $ids)->get()->toArray();
+    $textsById = [];
+    
+    foreach ($texts as $text) {
+        $textsById[$text['id']] = $text['text'];
+    }
+    
+    $textsOrderedByIds = [];
+    
+    foreach ($ids as $id) {
+        if (isset($textsById[$id])) {
+            $textsOrderedByIds[] = $textsById[$id];
+        }
+    }
+    
+    return $textsOrderedByIds;
+}
+
 
     /**
      * Retrieve the text for a given vector ID.
@@ -59,6 +81,7 @@ class VectorService
             ->map(function($vector) {
                 return [
                     'id' => $vector->id,
+                    'text_id'=> $vector->text_id ,
                     'vector' => json_decode($vector->vector, true)
                 ];
             })
