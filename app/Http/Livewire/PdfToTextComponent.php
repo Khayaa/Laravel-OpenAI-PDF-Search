@@ -67,8 +67,8 @@ class PdfToTextComponent extends Component
         // $chunks = preg_split($pattern, $cleanedText, -1, PREG_SPLIT_NO_EMPTY);
 
         // Split text into chunks with context
-        $wordsPerChunk = 50; // number of words per chunk
-        $overlapWords = 10; // number of overlapping words between chunks
+        $wordsPerChunk = 1000; // number of words per chunk
+        $overlapWords = 200; // number of overlapping words between chunks
         $pattern = '/\s+/' . '{1,' . ($wordsPerChunk + $overlapWords) . '}(?=\s)/'; // regex pattern to split by words with overlap
 
         $chunks = preg_split($pattern, $cleanedText, -1, PREG_SPLIT_NO_EMPTY);
