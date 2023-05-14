@@ -35,19 +35,19 @@ class VectorService
 {
     $texts = TextData::whereIn('id', $ids)->get()->toArray();
     $textsById = [];
-    
+
     foreach ($texts as $text) {
         $textsById[$text['id']] = $text['text'];
     }
-    
+
     $textsOrderedByIds = [];
-    
+
     foreach ($ids as $id) {
         if (isset($textsById[$id])) {
             $textsOrderedByIds[] = $textsById[$id];
         }
     }
-    
+
     return $textsOrderedByIds;
 }
 
@@ -75,10 +75,10 @@ class VectorService
      * @param int $limit
      * @return array
      */
-    public function getMostSimilarVectors(array $vector, int $limit = 10): array
+    public function getMostSimilarVectors(array $vector,$file_id , int $limit = 10): array
     {
-        $vectors = TextVector::all()
-            ->map(function($vector) {
+        $vectors = TextVector::where('file_id' , $file_id)->get()
+        ->map(function($vector) {
                 return [
                     'id' => $vector->id,
                     'text_id'=> $vector->text_id ,

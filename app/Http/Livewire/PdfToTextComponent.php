@@ -53,13 +53,18 @@ class PdfToTextComponent extends Component
             $stemmedTokens[] = $stemmer->stem($token);
         }
         $cleanedText = implode(' ', $stemmedTokens);
-        //$stemmedTokens = stem($normalizedTokens);
+
 
         $this->convertedText = $cleanedText;
-        $chunkSize = 4000;
+        // $chunkSize = 100;
 
-        // split the text into chunks
-        $chunks = str_split($cleanedText, $chunkSize);
+        // // split the text into chunks
+        // $chunks = str_split($cleanedText, $chunkSize);
+
+        // Split text into chunks with context
+        $wordsPerChunk = 1000; // number of words per chunk
+        $pattern = '/\s+/' . '{1,' . $wordsPerChunk . '}(?=\s)/'; // regex pattern to split by words
+        $chunks = preg_split($pattern, $cleanedText, -1, PREG_SPLIT_NO_EMPTY);
 
         // loop through the chunks and store each one as a vector
         foreach ($chunks as $a => $chunk) {
@@ -69,26 +74,23 @@ class PdfToTextComponent extends Component
                     'model' => 'text-embedding-ada-002',
                     'input' => $chunk,
                 ]);
-                  
-
-                    // store the chunk to the database
-                    $textData = TextData::firstOrCreate([
-                        'file_id' => $pdf_file->id,
-                        'text' => $chunk
-                    ]);
-
-                    // store the vector in the database
-                    $vectors = TextVector::create([
-                        'text_id' => $textData->id,
-                        'vector' => json_encode($vector['data'][0]['embedding']),
-                        'file_id' => $pdf_file->id,
-                    ]);
 
 
+                // store the chunk to the database
+                $textData = TextData::firstOrCreate([
+                    'file_id' => $pdf_file->id,
+                    'text' => $chunk
+                ]);
 
+                // store the vector in the database
+                $vectors = TextVector::create([
+                    'text_id' => $textData->id,
+                    'vector' => json_encode($vector['data'][0]['embedding']),
+                    'file_id' => $pdf_file->id,
+                ]);
             } catch (\Exception $e) {
                 // handle other exceptions
-                \Illuminate\Support\Facades\Log::error('OpenAI API exception: ' . $e->getMessage());
+                dd('OpenAI API exception: ' . $e->getMessage());
                 continue;
             }
         }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Models\Inputvector;
 use App\Models\Pdfdoc;
 use App\Models\TextData;
 use App\Models\TextVector;
@@ -32,20 +33,26 @@ class ConvertFiletoText extends Component
         ]);
         // Instantiate the VectorService class
         $vectorService = new VectorService();
-        $relevantChunks = $vectorService->getMostSimilarVectors($vector['data'][0]['embedding']);
-
+        $relevantChunks = $vectorService->getMostSimilarVectors($vector['data'][0]['embedding'] , $pdf_file->id , 2);
+        //Store Input and Vector
+        //dd($relevantChunks);
+        // Inputvector::create([
+        //     'text' => $this->input ,
+        //     'vector' => json_encode($vector['data'][0]['embedding'])
+        // ]);
+            dd($relevantChunks);
         //$texts = $vectorService->getTextsFromIds(collect($relevantChunks)->pluck('id'));
         $similarTexts = $vectorService->getTextsFromIds(array_column($relevantChunks, 'id'));
-        dd($similarTexts) ;   
+        dd($similarTexts) ;
     } catch (\Throwable $th) {
             dd($th->getMessage());
         }
-       
-        
-        
+
+
+
 
     }
-   
+
 
     public function render()
     {
