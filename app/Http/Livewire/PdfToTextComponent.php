@@ -62,9 +62,40 @@ class PdfToTextComponent extends Component
         // $chunks = str_split($cleanedText, $chunkSize);
 
         // Split text into chunks with context
-        $wordsPerChunk = 1000; // number of words per chunk
-        $pattern = '/\s+/' . '{1,' . $wordsPerChunk . '}(?=\s)/'; // regex pattern to split by words
+        // $wordsPerChunk = 1000; // number of words per chunk
+        // $pattern = '/\s+/' . '{1,' . $wordsPerChunk . '}(?=\s)/'; // regex pattern to split by words
+        // $chunks = preg_split($pattern, $cleanedText, -1, PREG_SPLIT_NO_EMPTY);
+
+        // Split text into chunks with context
+        $wordsPerChunk = 50; // number of words per chunk
+        $overlapWords = 10; // number of overlapping words between chunks
+        $pattern = '/\s+/' . '{1,' . ($wordsPerChunk + $overlapWords) . '}(?=\s)/'; // regex pattern to split by words with overlap
+
         $chunks = preg_split($pattern, $cleanedText, -1, PREG_SPLIT_NO_EMPTY);
+        $chunkCount = count($chunks);
+        for ($i = 0; $i < $chunkCount; $i++) {
+            $chunk = $chunks[$i];
+            if ($i == 0) {
+                // first chunk
+                $context = '';
+            } else {
+                // previous chunk
+                $prevChunk = $chunks[$i - 1];
+                // context words from previous chunk
+                $context = implode(' ', array_slice(explode(' ', $prevChunk), -$overlapWords));
+            }
+            if ($i == $chunkCount - 1) {
+                // last chunk
+                $context .= ' ' . $chunk;
+            } else {
+                // next chunk
+                $nextChunk = $chunks[$i + 1];
+                // context words from next chunk
+                $context .= ' ' . implode(' ', array_slice(explode(' ', $nextChunk), 0, $overlapWords));
+            }
+            $chunks[$i] = $context . ' ' . $chunk;
+        }
+
 
         // loop through the chunks and store each one as a vector
         foreach ($chunks as $a => $chunk) {
