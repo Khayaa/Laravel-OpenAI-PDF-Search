@@ -16,41 +16,51 @@ use Sastrawi\Stemmer\StemmerFactory;
 
 class ConvertFiletoText extends Component
 {
-    public $document, $convertedText , $input;
+    public $document, $convertedText, $input , $answer;
     protected $rules = [
         'document' => 'required',
-        'input'=> 'required'
+        'input' => 'required'
     ];
     public function convertFile()
     {
         $this->validate();
         $pdf_file = Pdfdoc::find($this->document);
         try {
-             //convert  input into vector
-        $vector = OpenAI::embeddings()->create([
-            'model' => 'text-embedding-ada-002',
-            'input' => $this->input,
-        ]);
-        // Instantiate the VectorService class
-        $vectorService = new VectorService();
-        $relevantChunks = $vectorService->getMostSimilarVectors($vector['data'][0]['embedding'] , $pdf_file->id , 2);
-        //Store Input and Vector
-        //dd($relevantChunks);
-        // Inputvector::create([
-        //     'text' => $this->input ,
-        //     'vector' => json_encode($vector['data'][0]['embedding'])
-        // ]);
-            dd($relevantChunks);
-        //$texts = $vectorService->getTextsFromIds(collect($relevantChunks)->pluck('id'));
-        $similarTexts = $vectorService->getTextsFromIds(array_column($relevantChunks, 'id'));
-        dd($similarTexts) ;
-    } catch (\Throwable $th) {
+            //convert  input into vector
+            $vector = OpenAI::embeddings()->create([
+                'model' => 'text-embedding-ada-002',
+                'input' => $this->input,
+            ]);
+            // Instantiate the VectorService class
+            $vectorService = new VectorService();
+            $relevantChunks = $vectorService->getMostSimilarVectors($vector['data'][0]['embedding'], $pdf_file->id, 2);
+            //Store Input and Vector
+
+            // Inputvector::create([
+            //     'text' => $this->input ,
+            //     'vector' => json_encode($vector['data'][0]['embedding'])
+            // ]);
+
+            //$texts = $vectorService->getTextsFromIds(collect($relevantChunks)->pluck('id'));
+            $similarTexts = $vectorService->getTextsFromIds(array_column($relevantChunks, 'id'));
+
+            // Combine the relevant texts into a single string as the knowledge base
+            $knowledgeBase = implode(' ', $similarTexts);
+
+            // Construct the prompt as a question and knowledge base
+            $prompt = "Q: " . $this->input . "\nKnowledge Base: " . $knowledgeBase ;
+
+            // Ask the model a question based on the prompt
+            $response = OpenAI::completions()->create([
+                'model' => 'text-davinci-002',
+                'prompt' => $prompt,
+                'max_tokens' => 100, // Adjust the max tokens as needed
+            ]);
+            //dd($response['choices'][0]['text']);
+            $this->answer =  $response['choices'][0]['text'];
+        } catch (\Throwable $th) {
             dd($th->getMessage());
         }
-
-
-
-
     }
 
 

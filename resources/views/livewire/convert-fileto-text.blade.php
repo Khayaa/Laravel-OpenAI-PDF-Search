@@ -53,9 +53,10 @@
                     </button>
 
                 </div>
-                @if ($convertedText)
+                @if ($answer)
                 <div class="form-group">
-                    <textarea disabled wire:model='convertedText' class="form-control" name="" id="" cols="30" rows="10">
+                    <label for="answer">Answer</label>
+                    <textarea disabled wire:model='answer' class="form-control" name="" id="" cols="30" rows="10">
 
                     </textarea>
 
