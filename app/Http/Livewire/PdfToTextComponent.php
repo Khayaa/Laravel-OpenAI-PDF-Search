@@ -8,9 +8,7 @@ use App\Models\TextVector;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use Log;
 use OpenAI\Laravel\Facades\OpenAI;
-use Spatie\PdfToText\Pdf;
 use Sastrawi\Stemmer\StemmerFactory;
 
 class PdfToTextComponent extends Component
@@ -18,7 +16,7 @@ class PdfToTextComponent extends Component
     use WithFileUploads;
     public $pdf_doc, $convertedText;
     protected $rules = [
-        'pdf_doc' => ['required', 'mimes:pdf']
+        'pdf_doc' => ['required', 'mimes:pdf'],
     ];
 
     public function getFile()
@@ -26,9 +24,9 @@ class PdfToTextComponent extends Component
         $this->validate();
         $file_name = now()->format('YmdHis') . '.' . $this->pdf_doc->getClientOriginalExtension();
         $file = $this->pdf_doc->storePubliclyAs('pdf-file', $file_name, 'public');
-        $pdf_file =  Pdfdoc::create([
+        $pdf_file = Pdfdoc::create([
             'name' => $file_name,
-            'file' => $file
+            'file' => $file,
         ]);
         //Convert Pdf to Text
         $sl = str_replace('/', '\\', $file);
@@ -54,7 +52,6 @@ class PdfToTextComponent extends Component
         }
         $cleanedText = implode(' ', $stemmedTokens);
 
-
         $this->convertedText = $cleanedText;
         // $chunkSize = 100;
 
@@ -70,62 +67,50 @@ class PdfToTextComponent extends Component
         $wordsPerChunk = 1000; // number of words per chunk
         $overlapWords = 200; // number of overlapping words between chunks
         $pattern = '/\s+' . '\{1,' . ($wordsPerChunk + $overlapWords) . '\}(?=\s)/'; // regex pattern to split by words with overlap
- // regex pattern to split by words with overlap
 
         $chunks = preg_split($pattern, $cleanedText, -1, PREG_SPLIT_NO_EMPTY);
         $chunkCount = count($chunks);
-        for ($i = 0; $i < $chunkCount; $i++) {
-            $chunk = $chunks[$i];
-            if ($i == 0) {
-                // first chunk
-                $context = '';
-            } else {
-                // previous chunk
-                $prevChunk = $chunks[$i - 1];
-                // context words from previous chunk
+
+        // Loop through the chunks and store each one as a vector
+        foreach ($chunks as $a => $chunk) {
+            $context = '';
+            if ($a > 0) {
+                $prevChunk = $chunks[$a - 1];
                 $context = implode(' ', array_slice(explode(' ', $prevChunk), -$overlapWords));
             }
-            if ($i == $chunkCount - 1) {
-                // last chunk
-                $context .= ' ' . $chunk;
-            } else {
-                // next chunk
-                $nextChunk = $chunks[$i + 1];
-                // context words from next chunk
+            if ($a < $chunkCount - 1) {
+                $nextChunk = $chunks[$a + 1];
                 $context .= ' ' . implode(' ', array_slice(explode(' ', $nextChunk), 0, $overlapWords));
             }
-            $chunks[$i] = $context . ' ' . $chunk;
-        }
 
+            $chunkWithContext = $context . ' ' . $chunk;
 
-        // loop through the chunks and store each one as a vector
-        foreach ($chunks as $a => $chunk) {
-            // generate a vector for the chunk using the OpenAI API
+            // Generate a vector for the chunk using the OpenAI API
             try {
                 $vector = OpenAI::embeddings()->create([
                     'model' => 'text-embedding-ada-002',
-                    'input' => $chunk,
+                    'input' => $chunkWithContext,
                 ]);
 
-
-                // store the chunk to the database
+                // Store the chunk to the database
                 $textData = TextData::firstOrCreate([
                     'file_id' => $pdf_file->id,
-                    'text' => $chunk
+                    'text' => $chunkWithContext,
                 ]);
 
-                // store the vector in the database
+                // Store the vector in the database
                 $vectors = TextVector::create([
                     'text_id' => $textData->id,
                     'vector' => json_encode($vector['data'][0]['embedding']),
                     'file_id' => $pdf_file->id,
                 ]);
             } catch (\Exception $e) {
-                // handle other exceptions
+                // Handle other exceptions
                 dd('OpenAI API exception: ' . $e->getMessage());
                 continue;
             }
         }
+
 
 
         $this->reset('pdf_doc');

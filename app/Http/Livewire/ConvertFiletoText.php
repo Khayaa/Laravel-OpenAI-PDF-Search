@@ -33,7 +33,7 @@ class ConvertFiletoText extends Component
             ]);
             // Instantiate the VectorService class
             $vectorService = new VectorService();
-            $relevantChunks = $vectorService->getMostSimilarVectors($vector['data'][0]['embedding'], $pdf_file->id, 2);
+            $relevantChunks = $vectorService->getMostSimilarVectors($vector['data'][0]['embedding'], $pdf_file->id, 4);
             //Store Input and Vector
 
             // Inputvector::create([
@@ -48,7 +48,7 @@ class ConvertFiletoText extends Component
             $knowledgeBase = implode(' ', $similarTexts);
 
             // Construct the prompt as a question and knowledge base
-            $prompt = "Q: " . $this->input . "\nKnowledge Base: " . $knowledgeBase ;
+            $prompt = "You are an expert in answering Questions \n please answer the following question: " . $this->input . " Using only the following source documents : " . $knowledgeBase ."\n if the answer is not there just say 'sorry I do not Know'" ;
 
             // Ask the model a question based on the prompt
             $response = OpenAI::completions()->create([
