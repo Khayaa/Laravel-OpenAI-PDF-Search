@@ -31,9 +31,7 @@ For detailed installation instructions and usage examples, please refer to the [
 
 Contributions are welcome! If you encounter any issues or have suggestions for improvements, please feel free to open an issue or submit a pull request.
 
-## License
 
-This project is licensed under the [MIT License](link-to-your-license-file). You are free to modify and distribute the code for both commercial and non-commercial purposes.
 
 ## Acknowledgements
 
@@ -41,5 +39,5 @@ This project relies on the power of OpenAI embeddings for text analysis and sear
 
 ## Contact
 
-For any inquiries or questions, please contact [your-email@example.com](mailto:your-email@example.com). We would be happy to assist you.
+For any inquiries or questions, please contact [khaya.developer@gmail.com](mailto:khaya.developer@gmail.com). We would be happy to assist you.
 
